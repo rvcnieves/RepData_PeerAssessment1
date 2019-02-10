@@ -8,9 +8,30 @@ output:
 
 ## Loading and preprocessing the data
 * Load data an convert date and intermal into datetime object.
-```{r loadData,cache=TRUE}
+
+```r
 #Load libraries
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 #Load data
 activityData <- read.csv( unz("activity.zip", filename = "activity.csv"))
 #convert date to date object
@@ -25,15 +46,36 @@ activityData$datetime <- as.POSIXct(paste(activityData$date, temp), format="%Y-%
 #convert data to dataframe
 activityData <- as.data.frame(activityData)
 summary(activityData)
-pctMissingSteps = round(sum(is.na(activityData$steps)) / dim(activityData)[1] *100,2)
+```
 
+```
+##      steps             date               interval     
+##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0  
+##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8  
+##  Median :  0.00   Median :2012-10-31   Median :1177.5  
+##  Mean   : 37.38   Mean   :2012-10-31   Mean   :1177.5  
+##  3rd Qu.: 12.00   3rd Qu.:2012-11-15   3rd Qu.:1766.2  
+##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0  
+##  NA's   :2304                                          
+##     datetime                  
+##  Min.   :2012-10-01 00:00:00  
+##  1st Qu.:2012-10-16 05:58:45  
+##  Median :2012-10-31 11:57:30  
+##  Mean   :2012-10-31 12:23:59  
+##  3rd Qu.:2012-11-15 17:56:15  
+##  Max.   :2012-11-30 23:55:00  
+## 
+```
+
+```r
+pctMissingSteps = round(sum(is.na(activityData$steps)) / dim(activityData)[1] *100,2)
 ```
 * Remove rows with NA's in steps column.
 
-We could set NA's values on the steps column to the median, which is zero, or we could remove those NA's row.  However, I choose to remove those NA's considering that NA's is only `r pctMissingSteps` % of the data.  This avoids including any bias into the analysis by using the actual data available.
+We could set NA's values on the steps column to the median, which is zero, or we could remove those NA's row.  However, I choose to remove those NA's considering that NA's is only 13.11 % of the data.  This avoids including any bias into the analysis by using the actual data available.
 
-```{r removeNAs,filterdata,cache=TRUE}
 
+```r
 filteredData <- activityData%>%
   na.omit()
 ```
@@ -42,54 +84,99 @@ filteredData <- activityData%>%
 ## What is mean total number of steps taken per day?
 
 * let's calculate the total number of steps taken per day
-```{r totalnumsteps,cache=TRUE}
+
+```r
 totalNumStepsPerDay <- filteredData %>%
   group_by(date) %>%
   summarize(totalSteps = sum(steps))
 head(totalNumStepsPerDay)
 ```
+
+```
+## # A tibble: 6 x 2
+##   date       totalSteps
+##   <date>          <int>
+## 1 2012-10-02        126
+## 2 2012-10-03      11352
+## 3 2012-10-04      12116
+## 4 2012-10-05      13294
+## 5 2012-10-06      15420
+## 6 2012-10-07      11015
+```
 * let's draw a histogram of the total number of steps taken each day
-```{r histogram,cache=TRUE}
+
+```r
 library(ggplot2)
 qplot(totalNumStepsPerDay$totalSteps,geom="histogram",bins = 50) + xlab("Total Number Of Steps Taken Each Day") + ylab("Number of Days")
 ```
 
+![](PA1_template_files/figure-html/histogram-1.png)<!-- -->
+
 Now let's calculate and report the mean and median of the total number of steps taken per day
 * Mean
-```{r mean,cache=TRUE}
 
+```r
 meanNumStepsPerDay <- filteredData %>%
   group_by(date) %>%
   summarize(meanSteps = mean(steps))
 
 head(meanNumStepsPerDay)  
+```
 
+```
+## # A tibble: 6 x 2
+##   date       meanSteps
+##   <date>         <dbl>
+## 1 2012-10-02     0.438
+## 2 2012-10-03    39.4  
+## 3 2012-10-04    42.1  
+## 4 2012-10-05    46.2  
+## 5 2012-10-06    53.5  
+## 6 2012-10-07    38.2
+```
+
+```r
 meanTotalNumStepsPerDay <- round(mean(totalNumStepsPerDay$totalSteps),4)
-
 ```
 
 Mean of the total number of steps taken per day:
-`r meanTotalNumStepsPerDay`
+1.0766189\times 10^{4}
 
 * Median
-```{r median,cache=TRUE}
 
+```r
 medianNumStepsPerDay <- filteredData %>%
   group_by(date) %>%
   summarize(medianSteps = median(steps))
 
 head(medianNumStepsPerDay)  
+```
+
+```
+## # A tibble: 6 x 2
+##   date       medianSteps
+##   <date>           <dbl>
+## 1 2012-10-02           0
+## 2 2012-10-03           0
+## 3 2012-10-04           0
+## 4 2012-10-05           0
+## 5 2012-10-06           0
+## 6 2012-10-07           0
+```
+
+```r
 medianTotalNumStepsPerDay <- median(totalNumStepsPerDay$totalSteps)
 ```
 
 Median of the total number of steps taken per day:
-`r medianTotalNumStepsPerDay`
+10765
 
 
 ## What is the average daily activity pattern?
 
 Moving forward, let's plot the time series of the 5-minute interval and also the average number of steps across all days:
-```{r plotTimeSeries,cache=TRUE}
+
+```r
 meanNumStepsPer5MinsInterval <- mean(filteredData$steps)
 
 maxNumStepsInterval <- filteredData %>%
@@ -103,23 +190,27 @@ ggplot(filteredData,aes(x=datetime,y=steps)) +
   ggtitle("Steps per 5-minute interval with average number of steps.")
 ```
 
-```{r finddatetimemax,cache=TRUE}
+![](PA1_template_files/figure-html/plotTimeSeries-1.png)<!-- -->
+
+
+```r
 maxNumStepsInterval <- maxNumStepsInterval %>%
   select(datetime)
-
 ```
-From the graph, we can see that the 5-minute interval with the maximum number of steps is: `r maxNumStepsInterval`
+From the graph, we can see that the 5-minute interval with the maximum number of steps is: 2012-11-27 06:15:00
 
 ## Imputing missing values
 First, let's calculate and report the total number of missing values in the dataset:
-```{r calcmissing, cache=TRUE}
+
+```r
 totalNumMissing <- sum(is.na(activityData$steps))
 pctMissingSteps = round( totalNumMissing / dim(activityData)[1] *100,2)
 ```
-We have `r totalNumMissing` rows ( `r pctMissingSteps`% ) with missing values in the steps column.
+We have 2304 rows ( 13.11% ) with missing values in the steps column.
 
 To fill in those missing values, let's use the mean value of each particular interval:
-```{r imputing,cache=TRUE}
+
+```r
 ## Calculate the mean for each interval
 intervalMeans <- activityData %>%
   na.omit() %>%
@@ -130,89 +221,141 @@ intervalMeans <- activityData %>%
 imputedData <- activityData
 imputedData$steps <- ifelse(is.na(activityData$steps) == TRUE, intervalMeans$intervalMeanSteps[intervalMeans$interval %in% activityData$steps], activityData$steps)
 head(imputedData)
+```
+
+```
+##       steps       date interval            datetime
+## 1 1.7169811 2012-10-01        0 2012-10-01 00:00:00
+## 2 0.3396226 2012-10-01        5 2012-10-01 00:05:00
+## 3 0.1320755 2012-10-01       10 2012-10-01 00:10:00
+## 4 0.1509434 2012-10-01       15 2012-10-01 00:15:00
+## 5 0.0754717 2012-10-01       20 2012-10-01 00:20:00
+## 6 2.0943396 2012-10-01       25 2012-10-01 00:25:00
+```
+
+```r
 summary(imputedData)
+```
+
+```
+##      steps             date               interval     
+##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0  
+##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8  
+##  Median :  0.00   Median :2012-10-31   Median :1177.5  
+##  Mean   : 33.87   Mean   :2012-10-31   Mean   :1177.5  
+##  3rd Qu.: 10.00   3rd Qu.:2012-11-15   3rd Qu.:1766.2  
+##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0  
+##     datetime                  
+##  Min.   :2012-10-01 00:00:00  
+##  1st Qu.:2012-10-16 05:58:45  
+##  Median :2012-10-31 11:57:30  
+##  Mean   :2012-10-31 12:23:59  
+##  3rd Qu.:2012-11-15 17:56:15  
+##  Max.   :2012-11-30 23:55:00
 ```
 
 Now, let's create a histogram of the dataset after imputation:
 
 First we calculate the total number of steps per day with the imputed data:
-```{r calcTotStepsImputed,cache=TRUE}
+
+```r
 totalNumStepsPerDayImputed <- imputedData %>%
   group_by(date) %>%
   summarize(totalSteps = sum(steps))
 head(totalNumStepsPerDayImputed)
 ```
 
+```
+## # A tibble: 6 x 2
+##   date       totalSteps
+##   <date>          <dbl>
+## 1 2012-10-01      2556.
+## 2 2012-10-02       126 
+## 3 2012-10-03     11352 
+## 4 2012-10-04     12116 
+## 5 2012-10-05     13294 
+## 6 2012-10-06     15420
+```
+
 Second, let's see the histogram of the imputed data:
-```{r histogramImputedData,cache=TRUE}
+
+```r
 qplot(totalNumStepsPerDayImputed$totalSteps,geom="histogram",bins = 50) + xlab("Total Number Of Steps Taken Each Day - Imputed Data") + ylab("Number of Days")
 ```
 
+![](PA1_template_files/figure-html/histogramImputedData-1.png)<!-- -->
+
 Third, let's calculate the mean and median and compare it to the previous values:
 * Mean
-```{r meanMedianImputed,cache=TRUE}
 
+```r
 meanNumStepsPerDayImputed <- imputedData %>%
   group_by(date) %>%
   summarize(meanSteps = mean(steps))
 
 head(meanNumStepsPerDayImputed)  
+```
 
+```
+## # A tibble: 6 x 2
+##   date       meanSteps
+##   <date>         <dbl>
+## 1 2012-10-01     8.88 
+## 2 2012-10-02     0.438
+## 3 2012-10-03    39.4  
+## 4 2012-10-04    42.1  
+## 5 2012-10-05    46.2  
+## 6 2012-10-06    53.5
+```
+
+```r
 meanTotalNumStepsPerDayImputed <- round(mean(totalNumStepsPerDayImputed$totalSteps),4)
-
 ```
 
 Mean of the total number of steps taken per day in the imputed data:
-`r meanTotalNumStepsPerDayImputed`
+9754.7127
 
 * Median
 
     
-```{r medianImputed,cache=TRUE}
 
+```r
 medianNumStepsPerDayImputed <- imputedData %>%
   group_by(date) %>%
   summarize(medianSteps = median(steps))
 
 head(medianNumStepsPerDayImputed)  
+```
+
+```
+## # A tibble: 6 x 2
+##   date       medianSteps
+##   <date>           <dbl>
+## 1 2012-10-01       0.604
+## 2 2012-10-02       0    
+## 3 2012-10-03       0    
+## 4 2012-10-04       0    
+## 5 2012-10-05       0    
+## 6 2012-10-06       0
+```
+
+```r
 medianTotalNumStepsPerDayImputed <- median(totalNumStepsPerDayImputed$totalSteps)
 ```
 
 Median of the total number of steps taken per day:
-`r medianTotalNumStepsPerDayImputed`
+1.0395\times 10^{4}
 
 
-Now, let's calculate the mean/median percent difference for the available data and the imputed data:
+Now, let's calculate the perfect difference between the data and the imputed data:
 
-```{r dataVsImputed,cache=TRUE}
+
+```r
 pctDiffMean <- round((meanTotalNumStepsPerDay - meanTotalNumStepsPerDayImputed) / meanTotalNumStepsPerDay,2) *100
 pctDiffMedian <- round((medianTotalNumStepsPerDay - medianTotalNumStepsPerDayImputed) / medianTotalNumStepsPerDay,2) *100
 ```
 
-The percent difference for the mean is: `r pctDiffMean`% and for the median is: `r pctDiffMedian`%.  This difference tells us that making this imputation increases bias on our data by changing the mean significantly and the median also.  Accordingly, we might be inclined on using the data that omits missing values, only using available data for our analysis.
+The percent difference for the mean is: 9% and for the median is: 3%.  This difference tells us that making this imputation increases bias on our data.  We might be inclined on using the data that omits missing values in order to use available data only for our analysis.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-
-For this section, let's create new factors that identifies weekday and weekend data:
-```{r weekdayWeekendFactors,cache=TRUE}
-library(lubridate)
-weekData <- imputedData %>%
-  mutate(
-  weekdayType = as.factor(ifelse(wday(imputedData$date) %in% list(2, 3, 4, 5, 6), "weekday","weekend") )
-  )
-
-```
-
-Then, we can plot the weekday and weekend number of steps per 5-minute interval:
-```{r weekendWeekdayPanelPlot,cache=TRUE}
-weekendPlot <- weekData %>%
-  filter(weekdayType == "weekend") %>%
-  ggplot(aes(x=datetime,y=steps)) +
-  # facet_wrap(~weekdayType,nrow = 2) +
-  geom_line() +
-  geom_hline(yintercept =  mean(weekData$steps))
-
-grid.arrange(weekendPlot,weekendPlot)
-
-```

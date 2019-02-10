@@ -204,7 +204,7 @@ First, let's calculate and report the total number of missing values in the data
 
 ```r
 totalNumMissing <- sum(is.na(activityData$steps))
-pctMissingSteps = round( totalNumMissing / dim(activityData)[1] *100,2)
+pctMissingSteps <- round( totalNumMissing / dim(activityData)[1] *100,2)
 ```
 We have 2304 rows ( 13.11% ) with missing values in the steps column.
 

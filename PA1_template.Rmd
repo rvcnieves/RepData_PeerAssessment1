@@ -114,7 +114,7 @@ From the graph, we can see that the 5-minute interval with the maximum number of
 First, let's calculate and report the total number of missing values in the dataset:
 ```{r calcmissing, cache=TRUE}
 totalNumMissing <- sum(is.na(activityData$steps))
-pctMissingSteps = round( totalNumMissing / dim(activityData)[1] *100,2)
+pctMissingSteps <- round( totalNumMissing / dim(activityData)[1] *100,2)
 ```
 We have `r totalNumMissing` rows ( `r pctMissingSteps`% ) with missing values in the steps column.
 

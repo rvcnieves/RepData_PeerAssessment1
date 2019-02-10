@@ -325,7 +325,7 @@ ggplot(filteredData,aes(x=datetime,y=steps)) +
 <h2>Imputing missing values</h2>
 <p>First, let’s calculate and report the total number of missing values in the dataset:</p>
 <pre class="r"><code>totalNumMissing &lt;- sum(is.na(activityData$steps))
-pctMissingSteps = round( totalNumMissing / dim(activityData)[1] *100,2)</code></pre>
+pctMissingSteps &lt;- round( totalNumMissing / dim(activityData)[1] *100,2)</code></pre>
 <p>We have 2304 rows ( 13.11% ) with missing values in the steps column.</p>
 <p>To fill in those missing values, let’s use the mean value of each particular interval:</p>
 <pre class="r"><code>## Calculate the mean for each interval

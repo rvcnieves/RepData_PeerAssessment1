@@ -347,7 +347,7 @@ Median of the total number of steps taken per day:
 1.0395\times 10^{4}
 
 
-Now, let's calculate the perfect difference between the data and the imputed data:
+Now, let's calculate the mean/median percent difference for the available data and the imputed data:
 
 
 ```r
@@ -355,7 +355,61 @@ pctDiffMean <- round((meanTotalNumStepsPerDay - meanTotalNumStepsPerDayImputed) 
 pctDiffMedian <- round((medianTotalNumStepsPerDay - medianTotalNumStepsPerDayImputed) / medianTotalNumStepsPerDay,2) *100
 ```
 
-The percent difference for the mean is: 9% and for the median is: 3%.  This difference tells us that making this imputation increases bias on our data.  We might be inclined on using the data that omits missing values in order to use available data only for our analysis.
+The percent difference for the mean is: 9% and for the median is: 3%.  This difference tells us that making this imputation increases bias on our data by changing the mean and the median.  
+
+If we look at the histograms, we can see that the imputed data histogram is similar to the first histogram, with a big difference in the number of days between the range of 2500-3800 steps. Accordingly, we might be inclined on using the data that omits missing values and not the imputed data, only using available data for our analysis, if we consider this change is not representative of the real steps behavior.  
+
+On the contrary, if we feel that replacing the missing NA's with the average values of the intervals is representative for the steps behavior in those intervals, we might be inclined in using the imputed data.  
+
+Considering that we have more than 85% of the data without missing values, I'm inclined in using the imputed data for any further analysis as it should be representative of the steps behavior.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+For this section, let's create new factors that identifies weekday and weekend data:
+
+```r
+library(lubridate)
+```
+
+```
+## 
+## Attaching package: 'lubridate'
+```
+
+```
+## The following object is masked from 'package:base':
+## 
+##     date
+```
+
+```r
+weekData <- imputedData %>%
+  mutate(
+  weekdayType = as.factor(ifelse(wday(imputedData$date) %in% list(2, 3, 4, 5, 6), "weekdays","weekends") )
+  )
+```
+
+Then, we can plot the weekday and weekend number of steps per 5-minute interval:
+
+```r
+## calculate the average for each type
+weekendStepsMean <-  weekData %>%
+  filter(weekdayType == "weekends") %>%
+  summarize(mean(steps))
+
+weekdayStepsMean <-  weekData %>%
+  filter(weekdayType == "weekdays") %>%
+  summarize(mean(steps))
+
+## add averages to weekData
+
+weekData$avgWeekdayType <- ifelse(weekData$weekdayType == "weekdays",unlist(weekdayStepsMean),unlist(weekendStepsMean) )
+## plot data
+ggplot(weekData,aes(x=datetime,y=steps))+
+  facet_wrap(~weekdayType,nrow = 2) +
+  geom_line() +
+  geom_line(aes(x=datetime,y=avgWeekdayType),color="red",linetype=2)
+```
+
+![](PA1_template_files/figure-html/weekendWeekdayPanelPlot-1.png)<!-- -->
